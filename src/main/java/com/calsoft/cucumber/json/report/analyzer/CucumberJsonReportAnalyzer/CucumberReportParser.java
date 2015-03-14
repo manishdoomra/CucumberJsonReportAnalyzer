@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,41 +41,42 @@ public class CucumberReportParser {
 	}
 			
 	
-	private static Map<String,List<String>> parseAndAnalyzeCucumberJsonFile(String cucumbergeneratedJsonFile) throws FileNotFoundException, IOException, ParseException{
-		Map<String,List<String>> resultOfParsing = new HashMap<String, List<String>>(); //Section, <Passed/Failed, List[tests]>;		
+	private static Map<String,Map<String,List<String>>> parseAndAnalyzeCucumberJsonFile(String cucumbergeneratedJsonFile) throws FileNotFoundException, IOException, ParseException{
+		
+		Map<String,Map<String,List<String>>> resultOfParsing = new HashMap<String, Map<String,List<String>>>(); //<Section, <Passed/Failed, List[tests]>>;
 		JSONParser jsonParser = new JSONParser();
 		Object cucumberJsonFileContent = jsonParser.parse(new FileReader(cucumbergeneratedJsonFile));
 		JSONArray cucumberJsonFileContentJSONArray = (JSONArray)cucumberJsonFileContent;
 		JSONObject firstElementInCucumberJsonFileContentJSONArray = (JSONObject) cucumberJsonFileContentJSONArray.get(0);  // It will always be 0th element
 		JSONArray elementsInJSONFile = (JSONArray)firstElementInCucumberJsonFileContentJSONArray.get("elements");
-		
-		List<String> failedScenarios = new ArrayList<String>();
-		List<String> passedScenarios = new ArrayList<String>();
-		
+				
 		// Browse through JsonFile elements[Tests/Scenarios] and prepare the list of passed ones and failed ones
-		for(int i=0;i<elementsInJSONFile.size();i++){
+		for(int i=0;i<elementsInJSONFile.size();i++) {
 			JSONObject scenarioJsonObject = (JSONObject) elementsInJSONFile.get(i);
 			String scenarioName = (String)scenarioJsonObject.get("name");
-			System.out.println("\n\n"+scenarioName);
 			JSONArray tagsArray = (JSONArray)scenarioJsonObject.get("tags");
+			
 			//Browse through tags and fetch the section name
-			for(int j=0;j<tagsArray.size();j++){
-				JSONObject tag = (JSONObject)tagsArray.get(j);
-				if(j==2){
-					System.out.println(tag.get("name"));
-				}
+			JSONObject tag = (JSONObject)tagsArray.get(2); // 3rd tag is always section in 4.1 F-TAF framework
+			String sectionName  = (String)tag.get("name");
+			
+			if(resultOfParsing.get(sectionName)==null) { // First time data-structure initialization for a section
+				Map<String,List<String>> passedFailedScenariosForASection = new HashMap<String, List<String>>();
+				List<String> passedScenariosListForASection = new ArrayList<String>();
+				List<String> failedScenariosListForASection = new ArrayList<String>();
+				passedFailedScenariosForASection.put(STATUS.PASSED.getStatus(), passedScenariosListForASection);
+				passedFailedScenariosForASection.put(STATUS.FAILED.getStatus(), failedScenariosListForASection);
+				resultOfParsing.put(sectionName, passedFailedScenariosForASection);
 			}
-			if(allStepsPassedOrNot(scenarioJsonObject)){
-				passedScenarios.add(scenarioName);
+			
+			if(allStepsPassedOrNot(scenarioJsonObject)){ // If all steps are passed for a scenario
+				resultOfParsing.get(sectionName).get(STATUS.PASSED.getStatus()).add(scenarioName);			
 			}else{
-				failedScenarios.add(scenarioName);
-			}
+				resultOfParsing.get(sectionName).get(STATUS.FAILED.getStatus()).add(scenarioName);
+			}		
+			
 		}
 		
-		resultOfParsing.put(STATUS.PASSED.getStatus(), passedScenarios);
-		System.out.println("Passed Scenarios : "+passedScenarios.size());
-		resultOfParsing.put(STATUS.FAILED.getStatus(), failedScenarios);
-		System.out.println("Failed Scenarios : "+failedScenarios.size());
 		return resultOfParsing;		
 	}
 	
@@ -95,14 +95,11 @@ public class CucumberReportParser {
 			STATUS status = STATUS.valueOf(stepResultStatus.toUpperCase(Locale.ENGLISH)); 
 			switch(status){
 				case PASSED: 
-							 System.out.println("Step passed");
 							 break;
 				case FAILED:
-							 System.out.println("Step failed"); 
 							 allStepsPassed = false;
 							 break;
 				case UNDEFINED:
-							 System.out.println("Step undefined"); 
 							 allStepsPassed = false;
 							 break;
 				default:
@@ -113,43 +110,10 @@ public class CucumberReportParser {
 	}
 	
 	
-	public static void analyze(String jsonFile){
-		JSONParser parser = new JSONParser();
-		try {
-			Object obj = parser.parse(new FileReader(jsonFile));			
-			JSONArray jsonArray = (JSONArray)obj;
-			System.out.println(jsonArray.size());
-			
-			JSONObject jsonObj = (JSONObject) jsonArray.get(0);
-			JSONArray jsonArray1 = (JSONArray)jsonObj.get("elements");
-			System.out.println(jsonArray1);
-			JSONObject objJson = (JSONObject)jsonArray1.get(0);
-			System.out.println(objJson.get("name"));
-			JSONArray jsonSteps = (JSONArray)objJson.get("steps");
-			System.out.println(jsonSteps);
-			Iterator steps = jsonSteps.iterator();
-			while(steps.hasNext()){
-				JSONObject array = (JSONObject)steps.next();
-				JSONObject aa = (JSONObject)array.get("result");
-				System.out.println(aa.get("status"));	
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	
 	public static void main(String[] args){
 		try {
-			Map<String,List<String>> parsedJson = parseAndAnalyzeCucumberJsonFile("C:/Nexenta/cucumber_report_datasetgroups_pools.json");
-			
+			Map<String,Map<String,List<String>>> parsedJson = parseAndAnalyzeCucumberJsonFile("C:/Nexenta/cucumber_report_datasetgroups_pools.json");
+			System.out.println(parsedJson.get("@DatasetGroups").get(STATUS.FAILED.getStatus()).size());
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
