@@ -41,7 +41,7 @@ public class CucumberReportParser {
 	}
 			
 	
-	private static Map<String,Map<String,List<String>>> parseAndAnalyzeCucumberJsonFile(String cucumbergeneratedJsonFile) throws FileNotFoundException, IOException, ParseException{
+	public static Map<String,Map<String,List<String>>> parseAndAnalyzeCucumberJsonFile(String cucumbergeneratedJsonFile) throws FileNotFoundException, IOException, ParseException{
 		
 		Map<String,Map<String,List<String>>> resultOfParsing = new HashMap<String, Map<String,List<String>>>(); //<Section, <Passed/Failed, List[tests]>>;
 		JSONParser jsonParser = new JSONParser();
@@ -112,8 +112,8 @@ public class CucumberReportParser {
 	
 	public static void main(String[] args){
 		try {
-			Map<String,Map<String,List<String>>> parsedJson = parseAndAnalyzeCucumberJsonFile("C:/Nexenta/cucumber_report_datasetgroups_pools.json");
-			System.out.println(parsedJson.get("@DatasetGroups").get(STATUS.FAILED.getStatus()).size());
+			Map<String,Map<String,List<String>>> parsedJson = parseAndAnalyzeCucumberJsonFile("C:/Nexenta/cucumber_full_run_report.json");
+			System.out.println(parsedJson.get("@Pools").get(STATUS.FAILED.getStatus()).size());
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
