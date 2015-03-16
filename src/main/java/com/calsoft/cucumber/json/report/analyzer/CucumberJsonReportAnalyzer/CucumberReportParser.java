@@ -27,7 +27,8 @@ public class CucumberReportParser {
 		//Enum Constants
 		PASSED("passed"),
 		FAILED("failed"),
-		UNDEFINED("undefined");
+		UNDEFINED("undefined"),
+		SKIPPED("skipped");
 		
 		private String status;
 		
@@ -87,6 +88,9 @@ public class CucumberReportParser {
 	private static boolean allStepsPassedOrNot(JSONObject scenarioJsonObject){
 		boolean allStepsPassed = true;
 		JSONArray stepsInAScenario = (JSONArray)scenarioJsonObject.get("steps");
+		if(stepsInAScenario == null){
+			return false;
+		}
 		//Iterate through all steps and if any of step is failed/skipped return false for that scenario
 		for(int i=0;i<stepsInAScenario.size();i++){
 			JSONObject step = (JSONObject)stepsInAScenario.get(i);
@@ -102,6 +106,9 @@ public class CucumberReportParser {
 				case UNDEFINED:
 							 allStepsPassed = false;
 							 break;
+				case SKIPPED:
+							allStepsPassed = false;
+							break;
 				default:
 						throw new RuntimeException("The step result status is not [passed, failed, undefined] : "+stepResultStatus);
 			}
