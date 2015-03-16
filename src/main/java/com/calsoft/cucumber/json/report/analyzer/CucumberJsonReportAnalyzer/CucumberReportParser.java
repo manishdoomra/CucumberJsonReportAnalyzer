@@ -65,16 +65,24 @@ public class CucumberReportParser {
 				Map<String,List<String>> passedFailedScenariosForASection = new HashMap<String, List<String>>();
 				List<String> passedScenariosListForASection = new ArrayList<String>();
 				List<String> failedScenariosListForASection = new ArrayList<String>();
+				List<String> undefinedScenariosListForASection = new ArrayList<String>();
+				List<String> skippedScenariosListForASection = new ArrayList<String>();
 				passedFailedScenariosForASection.put(STATUS.PASSED.getStatus(), passedScenariosListForASection);
 				passedFailedScenariosForASection.put(STATUS.FAILED.getStatus(), failedScenariosListForASection);
+				passedFailedScenariosForASection.put(STATUS.UNDEFINED.getStatus(), undefinedScenariosListForASection);
+				passedFailedScenariosForASection.put(STATUS.SKIPPED.getStatus(), skippedScenariosListForASection);
 				resultOfParsing.put(sectionName, passedFailedScenariosForASection);
 			}
 			
-			if(allStepsPassedOrNot(scenarioJsonObject)){ // If all steps are passed for a scenario
+			if(allStepsPassedOrNot(scenarioJsonObject).equals(STATUS.PASSED)){ // If all steps are passed for a scenario
 				resultOfParsing.get(sectionName).get(STATUS.PASSED.getStatus()).add(scenarioName);			
-			}else{
+			}else if(allStepsPassedOrNot(scenarioJsonObject).equals(STATUS.FAILED)){
 				resultOfParsing.get(sectionName).get(STATUS.FAILED.getStatus()).add(scenarioName);
-			}		
+			} else if(allStepsPassedOrNot(scenarioJsonObject).equals(STATUS.UNDEFINED)){
+				resultOfParsing.get(sectionName).get(STATUS.UNDEFINED.getStatus()).add(scenarioName);
+			}else if(allStepsPassedOrNot(scenarioJsonObject).equals(STATUS.SKIPPED)){
+				resultOfParsing.get(sectionName).get(STATUS.SKIPPED.getStatus()).add(scenarioName);
+			}
 			
 		}
 		
@@ -85,11 +93,11 @@ public class CucumberReportParser {
 	 * 
 	 * @return true if all steps of a scenario passed otherwise false
 	 */
-	private static boolean allStepsPassedOrNot(JSONObject scenarioJsonObject){
-		boolean allStepsPassed = true;
+	private static STATUS allStepsPassedOrNot(JSONObject scenarioJsonObject){
+		STATUS allStepsPassed = STATUS.PASSED;
 		JSONArray stepsInAScenario = (JSONArray)scenarioJsonObject.get("steps");
 		if(stepsInAScenario == null){
-			return false;
+			return STATUS.UNDEFINED;
 		}
 		//Iterate through all steps and if any of step is failed/skipped return false for that scenario
 		for(int i=0;i<stepsInAScenario.size();i++){
@@ -101,13 +109,13 @@ public class CucumberReportParser {
 				case PASSED: 
 							 break;
 				case FAILED:
-							 allStepsPassed = false;
+							 allStepsPassed = STATUS.FAILED;
 							 break;
 				case UNDEFINED:
-							 allStepsPassed = false;
+							 allStepsPassed = STATUS.UNDEFINED;
 							 break;
 				case SKIPPED:
-							allStepsPassed = false;
+							allStepsPassed = STATUS.SKIPPED;
 							break;
 				default:
 						throw new RuntimeException("The step result status is not [passed, failed, undefined] : "+stepResultStatus);
