@@ -67,22 +67,14 @@ public class PDFGenerator {
 	      
 	      addResultPassedOrFailedDetailedPage(document,analyzedreport,STATUS.FAILED);
 	      
-	      Paragraph chunk3 = new Paragraph("Undefined Scenarios",catFont);
+	      Paragraph chunk3 = new Paragraph("Yet to be Automated Scenarios",catFont);
 	      chunk3.setSpacingBefore(30);
 	      chunk3.setAlignment(Element.ALIGN_CENTER);
 	      chunk3.setSpacingAfter(20);
 	      document.add(chunk3);
 	      
 	      addResultPassedOrFailedDetailedPage(document,analyzedreport,STATUS.UNDEFINED);
-	      
-	      Paragraph chunk4 = new Paragraph("Skipped Scenarios",catFont);
-	      chunk4.setSpacingBefore(30);
-	      chunk4.setAlignment(Element.ALIGN_CENTER);
-	      chunk4.setSpacingAfter(20);
-	      document.add(chunk4);
-	      
-	      addResultPassedOrFailedDetailedPage(document,analyzedreport,STATUS.SKIPPED);	      
-	      
+	      	      
 	      document.close();
 	    } catch (Exception e) {
 	      e.printStackTrace();
@@ -91,21 +83,19 @@ public class PDFGenerator {
 
 	  
 	  private static void addResultSummaryPage(Document document, Map<String,Map<String,List<String>>> parsedJson) throws DocumentException{
-		  PdfPTable summaryResultTable = new PdfPTable(6); // Sno., Section, Passed, Failed, Undefined, Skipped
-		  float[] colWidths = {0.5f,3f,1f,1f,1f,1f};
+		  PdfPTable summaryResultTable = new PdfPTable(5); // Sno., Section, Passed, Failed, Undefined
+		  float[] colWidths = {0.5f,3f,1f,1f,1f};
 		  summaryResultTable.setWidths(colWidths);
 		  PdfPCell sno = new PdfPCell(new Phrase("Sno.",smallBold));
 		  PdfPCell sectionCell = new PdfPCell(new Phrase("Section",smallBold));
 		  PdfPCell passed = new PdfPCell(new Phrase("Passed",smallBold));
 		  PdfPCell failed = new PdfPCell(new Phrase("Failed",smallBold));
-		  PdfPCell undefined = new PdfPCell(new Phrase("Undefined",smallBold));
-		  PdfPCell skipped = new PdfPCell(new Phrase("Skipped",smallBold));
+		  PdfPCell undefined = new PdfPCell(new Phrase("Yet to be Automated",smallBold));		  
 		  summaryResultTable.addCell(sno);
 		  summaryResultTable.addCell(sectionCell);
 		  summaryResultTable.addCell(passed);
 		  summaryResultTable.addCell(failed);
-		  summaryResultTable.addCell(undefined);
-		  summaryResultTable.addCell(skipped);
+		  summaryResultTable.addCell(undefined);		  
 		  
 		  int count=1;
 		  int sumPassed = 0;
@@ -128,17 +118,12 @@ public class PDFGenerator {
 			  Integer undefinedScenariosForASection = parsedJson.get(section).get(CucumberReportParser.STATUS.UNDEFINED.getStatus()).size();
 			  sumUndefined += undefinedScenariosForASection;
 			  PdfPCell undefinedCell = new PdfPCell(new Phrase(Integer.toString(parsedJson.get(section).get(CucumberReportParser.STATUS.UNDEFINED.getStatus()).size()),lightGrayFont));
-			  
-			  Integer skippedScenariosForASection = parsedJson.get(section).get(CucumberReportParser.STATUS.SKIPPED.getStatus()).size();
-			  sumSkipped += skippedScenariosForASection;
-			  PdfPCell skippedCell = new PdfPCell(new Phrase(Integer.toString(parsedJson.get(section).get(CucumberReportParser.STATUS.SKIPPED.getStatus()).size()),lightGrayFont));
-			  
+			  			  
 			  summaryResultTable.addCell(snoCell);
 			  summaryResultTable.addCell(cell);
 			  summaryResultTable.addCell(passedCell);
 			  summaryResultTable.addCell(failedCell);
-			  summaryResultTable.addCell(undefinedCell);
-			  summaryResultTable.addCell(skippedCell);
+			  summaryResultTable.addCell(undefinedCell);			  
 			  count++;
 		  }
 		  
@@ -146,8 +131,7 @@ public class PDFGenerator {
 		  summaryResultTable.addCell(new Phrase("Total : ",smallBold));
 		  summaryResultTable.addCell(new Phrase(Integer.toString(sumPassed),smallBold));
 		  summaryResultTable.addCell(new Phrase(Integer.toString(sumFailed),smallBold));
-		  summaryResultTable.addCell(new Phrase(Integer.toString(sumUndefined),smallBold));
-		  summaryResultTable.addCell(new Phrase(Integer.toString(sumSkipped),smallBold));
+		  summaryResultTable.addCell(new Phrase(Integer.toString(sumUndefined),smallBold));	  
 		  
 		  summaryResultTable.setHeaderRows(1);
 		  document.add(summaryResultTable);
@@ -165,10 +149,9 @@ public class PDFGenerator {
 		  }else if(statusEnum.equals(STATUS.FAILED)){
 			  scenariosColumnName = "Failed Scenarios";
 		  }else if(statusEnum.equals(STATUS.UNDEFINED)){
-			  scenariosColumnName = "Undefined Scenarios";
-		  }else if(statusEnum.equals(STATUS.SKIPPED)){
-			  scenariosColumnName = "Skipped Scenarios";
+			  scenariosColumnName = "Yet to be Automated Scenarios";
 		  }
+		  
 		  PdfPCell scenariosCell = new PdfPCell(new Phrase(scenariosColumnName,smallBold));
 		  
 		  passedDetailedResultTable.addCell(sno);
@@ -187,8 +170,6 @@ public class PDFGenerator {
 				  status = CucumberReportParser.STATUS.FAILED.getStatus();
 			  }else if(statusEnum.equals(STATUS.UNDEFINED)){
 				  status = CucumberReportParser.STATUS.UNDEFINED.getStatus();
-			  }else if(statusEnum.equals(STATUS.SKIPPED)){
-				  status = CucumberReportParser.STATUS.SKIPPED.getStatus();
 			  }
 			  
 			  for(String scenarios : parsedJson.get(section).get(status)){

@@ -81,7 +81,7 @@ public class CucumberReportParser {
 			} else if(allStepsPassedOrNot(scenarioJsonObject).equals(STATUS.UNDEFINED)){
 				resultOfParsing.get(sectionName).get(STATUS.UNDEFINED.getStatus()).add(scenarioName);
 			}else if(allStepsPassedOrNot(scenarioJsonObject).equals(STATUS.SKIPPED)){
-				resultOfParsing.get(sectionName).get(STATUS.SKIPPED.getStatus()).add(scenarioName);
+				// Consider all skipped test cases as failed
 			}
 			
 		}
@@ -115,7 +115,7 @@ public class CucumberReportParser {
 							 allStepsPassed = STATUS.UNDEFINED;
 							 break;
 				case SKIPPED:
-							allStepsPassed = STATUS.SKIPPED;
+							allStepsPassed = STATUS.FAILED;
 							break;
 				default:
 						throw new RuntimeException("The step result status is not [passed, failed, undefined] : "+stepResultStatus);
