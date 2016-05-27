@@ -1,0 +1,8 @@
+--- 
+# The path on Jenkins machine where all Jenkins jobs reside
+base.path: /media/manish/Manish/Manish
+output.path: /media/manish/Manish/Manish/Generated_pdf
+jenkins.jobs:
+             - cucumber_pool_reports.json
+             - cucumber_network_reports.json
+...
