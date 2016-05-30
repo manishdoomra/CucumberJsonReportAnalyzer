@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+    
+    <bean id="application" class="com.calsoft.report.generator.pdf.ApplicationClass">
+    	<property name="yamlFileName" value="CucumberReports.yaml"/>
+    </bean>
+    
+    <bean id="cucumberReportAnalyzer" class="com.calsoft.cucumber.json.report.analyzer.CucumberJsonReportAnalyzer.CucumberReportParserImpl"></bean>
+    
+    <bean id="pdfGenerator" class="com.calsoft.report.generator.pdf.PDFGeneratorImpl"></bean>
+</beans>    
